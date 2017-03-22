@@ -7,6 +7,10 @@ import logging
 logger = logging.getLogger('project.interesting.stuff')
 
 
+def register_operation(operation):
+    def registered_operation(*args, **kwargs):
+        return operation(*args, **kwargs)
+    return registered_operation
 
 def init():
     return 'Success'
@@ -122,6 +126,10 @@ def make_decision(ready_for_decision, decision, operation=None, context=None):
     message.save()
     if decision:
         return True
+    return None
+
+def create_location(location_name, operation=None, context=None):
+    
     return None
 
 def return_true(operation=None, context=None):
