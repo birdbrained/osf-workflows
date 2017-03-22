@@ -7,20 +7,30 @@ import logging
 logger = logging.getLogger('project.interesting.stuff')
 
 
-def register_operation(operation):
-    def registered_operation(*args, **kwargs):
-        return operation(*args, **kwargs)
-    return registered_operation
+class Registry():
 
+    def __init__(self):
+        self.registry = set()
+
+    def register(self, operation):
+        self.registry.update(operation.__name__)
+        return operation
+
+
+operation_registry = Registry()
+
+
+@operation_registry.register    
 def init():
     return 'Success'
 
-
+@operation_registry.register
 def echo(string=''):
     logger.log(10, '\necho\n====')
     return string
 
 
+@operation_registry.register
 def accept_editor_invite(rsvp, operation=None, context=None):
     next_assignment = models.Assignment()
     if rsvp == 'Accept':
@@ -34,6 +44,7 @@ def accept_editor_invite(rsvp, operation=None, context=None):
     return 'Success'
 
 
+@operation_registry.register
 def associate_resource(resource_identifier, operation=None, context=None):
     if resource_identifier is None:
         message = models.Message()
@@ -46,6 +57,7 @@ def associate_resource(resource_identifier, operation=None, context=None):
     return True
 
 
+@operation_registry.register
 def invite_user(permit, users_to_invite, invited, role, assignments_finished, operation=None, context=None):
     if not permit:
         return invited
@@ -74,6 +86,7 @@ def invite_user(permit, users_to_invite, invited, role, assignments_finished, op
     return invited
 
 
+@operation_registry.register
 def accept_invitation(invited, invitee, rsvp, active_assignees, assignments_finished, operation=None, context=None):
     if assignments_finished:
         return []
@@ -92,6 +105,7 @@ def accept_invitation(invited, invitee, rsvp, active_assignees, assignments_fini
     return active_assignees
 
 
+@operation_registry.register
 def finish_assignment(active_assignees, finished_assignee, finished_assignees, assignments_finished, operation=None, context=None):
     if assignments_finished:
         return finished_assignees
@@ -109,12 +123,14 @@ def finish_assignment(active_assignees, finished_assignee, finished_assignees, a
     return finished_assignees
 
 
+@operation_registry.register
 def assignments_finished(finished_assignees, required_finished_assignees, operation=None, context=None):
     if len(finished_assignees) == required_finished_assignees:
         return True
     return False
 
 
+@operation_registry.register
 def make_decision(ready_for_decision, decision, operation=None, context=None):
     if not ready_for_decision:
         return None
@@ -128,10 +144,11 @@ def make_decision(ready_for_decision, decision, operation=None, context=None):
         return True
     return None
 
+@operation_registry.register
 def create_location(location_name, operation=None, context=None):
-    
     return None
 
+@operation_registry.register
 def return_true(operation=None, context=None):
     return True
 
