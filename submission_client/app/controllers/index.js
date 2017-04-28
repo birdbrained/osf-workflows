@@ -8,7 +8,7 @@ export default Ember.Controller.extend({
             let wfcase = this.get('store').createRecord('case');
             wfcase.set("net", net)
             await wfcase.save();
-            this.transitionToRoute('inbox.index');
+            this.transitionToRoute('case.inbox.index', wfcase)
         }
 
     }

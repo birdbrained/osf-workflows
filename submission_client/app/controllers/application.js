@@ -12,7 +12,6 @@ export default Ember.Controller.extend(OsfAgnosticAuthControllerMixin,{
 
     actions: {
         loginSuccess() {
-           // this.transitionToRoute('researcher.grant');
         },
         loginFail(/* err */) {
             this.get('toast').error('Login failed');
