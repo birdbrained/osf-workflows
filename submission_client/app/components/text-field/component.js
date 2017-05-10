@@ -7,22 +7,19 @@ export default Ember.Component.extend({
     preprintTitleObserver: Ember.observer('preprintTitle', async function() {
 
         const message = this.get('message');
-        const locaxion = this.get('message.response');
+        const parameter = this.get('message.response');
         const caxe = this.get('message.caxe');
 
         this.get('store').findRecord('case', this.get('message.caxe.id')).then(async (caxeo)=>{
 
-
             const refresh = this.attrs.refresh;
             const store = this.get("store");
-            const token = store.createRecord('token');
-            token.set('color', this.get('preprintTitle'));
-            token.set('caxe', caxe);
-            token.set('net', caxeo.get('net'));
-            token.set('name', message.get('responseTokenName'))
-            token.set('location', locaxion);
-            token.set('requestMessage', message);
-            const response = await token.save();
+            const value = store.createRecord('value');
+            value.set('value', this.get('preprintTitle'));
+            value.set('caxe', caxe);
+            value.set('state', 'defined');
+            value.set('parameter', parameter);
+            const response = await value.save();
             this.get('store').findAll('message', {reload: true}).then((messages) => {
                 this.attrs.refresh()
             })

@@ -14,11 +14,25 @@ Router.map(function() {
     });
 
     this.route('workflows', function() {
-        this.route('workflow', {path: ':workflow'}, function() {
+        this.route('workflow', {
+            path: ':workflow'
+        }, function() {
             this.route('graph', {path: 'graph'});
         });
         this.route('create');
     });
+
+    this.route('cases', function() {
+        this.route('case', {
+            path: ':case'
+        }, function() {
+            this.route('inbox', function() {
+                this.route('index', {
+                    path: ''
+                });
+            });
+        });
+    })
 
     this.route('roles', function() {
         this.route('roles', {path: ':role'});

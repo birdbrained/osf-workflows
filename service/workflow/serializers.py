@@ -2,194 +2,271 @@
 """Workflow Serializers"""
 
 
+from django.contrib.auth.models import User
+from django.contrib.auth.models import Group
+
 from rest_framework.serializers import CharField
-from rest_framework_json_api import serializers, relations
-from django.contrib.auth.models import User, Group
+from rest_framework.serializers import JSONField
+from rest_framework_json_api.serializers import ModelSerializer
+from rest_framework_json_api.relations import ResourceRelatedField
 
-from workflow import models
+from workflow.models import Workflow
+from workflow.models import Case
+from workflow.models import Action
+from workflow.models import Parameter
+from workflow.models import Condition
+from workflow.models import Message
+from workflow.models import Value
 
 
-class Net(serializers.ModelSerializer):
+class WorkflowSerializer(ModelSerializer):
+    """Workflow Serializer"""
+
+    name = CharField(max_length=128)
+    actions = ResourceRelatedField(
+        queryset=Action.objects.all(),
+        many=True,
+        required=False
+    )
 
     class Meta:
-        resource_name = 'nets'
-        model = models.Net
-        fields = (
+        resource_name = 'workflows'
+        model = Workflow
+        fields = [
             'id',
             'name',
             'description',
             'group',
             'cases',
-            'transitions',
-            'locations',
-        )
+            'conditions',
+            'actions'
+        ]
 
 
-class Transition(serializers.ModelSerializer):
+class CaseSerializer(ModelSerializer):
+    """Case Serializer"""
 
-    name = CharField(max_length=128, required=False)
-    transition_class = CharField(max_length=128, required=False)
-    group = relations.ResourceRelatedField(
-        queryset=Group.objects.all()
-    )
-    inputs = relations.ResourceRelatedField(
+    parameters = ResourceRelatedField(
+        queryset=Parameter.objects.all(),
         many=True,
-        queryset=models.Location.objects.all()
+        required=False
     )
-    outputs = relations.ResourceRelatedField(
+
+    workflow = ResourceRelatedField(
+        queryset=Workflow.objects.all(),
+        required=True
+    )
+
+    messages = ResourceRelatedField(
+        queryset=Message.objects.all(),
         many=True,
-        queryset=models.Location.objects.all()
+        required=False
     )
 
-    class Meta:
-        resource_name = 'transitions'
-        model = models.Transition
-        fields = (
-            'id',
-            'name',
-            'description',
-            'group',
-            'transition_class',
-            'inputs',
-            'outputs',
-            'messages',
-            'net',
-            'arcs'
-        )
-
-
-class Token(serializers.ModelSerializer):
-
-    location = relations.ResourceRelatedField(
-        required=False,
-        queryset=models.Location.objects.all()
-    )
-
-    net = relations.ResourceRelatedField(
-        required=False,
-        queryset=models.Net.objects.all()
-    )
-
-    case = relations.ResourceRelatedField(
-        required=False,
-        queryset=models.Case.objects.all()
-    )
-
-    request_messages = relations.ResourceRelatedField(
-        required=False,
+    values = ResourceRelatedField(
+        queryset=Value.objects.all(),
         many=True,
-        queryset=models.Message.objects.all()
+        required=False
     )
 
-    class Meta:
-        resource_name = 'tokens'
-        model = models.Token
-        fields = (
-            'color',
-            'case',
-            'location',
-            'request_messages',
-            'name',
-            'net'
-        )
-
-
-class Location(serializers.ModelSerializer):
-
-    sources = relations.ResourceRelatedField(
-        many=True,
-        queryset=models.Transition.objects.all()
-    )
-    targets = relations.ResourceRelatedField(
-        many=True,
-        queryset=models.Transition.objects.all()
-    )
-
-    class Meta:
-        resource_name = 'locations'
-        model = models.Location
-        fields = (
-            'name',
-            'description',
-            'type',
-            'net',
-            'targets',
-            'arcs',
-            'tokens',
-            'sources'
-        )
-
-
-class Arc(serializers.ModelSerializer):
-
-    class Meta:
-        resource_name = 'arcs'
-        model = models.Arc
-        fields = (
-            'type',
-        )
-
-
-class Case(serializers.ModelSerializer):
-
-    messages = relations.ResourceRelatedField(
-        required=False,
-        many=True,
-        queryset=models.Message.objects.all()
+    initial_state = JSONField(
+        required=False
     )
 
     class Meta:
         resource_name = 'cases'
-        model = models.Case
-        fields = (
+        model = Case
+        fields = [
             'id',
-            'net',
+            'parameters',
+            'values',
+            'workflow',
+            'initial_state',
             'messages'
-        )
+        ]
 
 
-class Message(serializers.ModelSerializer):
-    
-    response_tokens = relations.ResourceRelatedField(
-        required=False,
-        many=True,
-        queryset=models.Token.objects.all()
+class ActionSerializer(ModelSerializer):
+    """Action Serializer"""
+
+    name = CharField(max_length=128)
+
+    group = ResourceRelatedField(
+        queryset=Group.objects.all()
+    )
+
+    ouput = ResourceRelatedField(
+        queryset=Parameter.objects.all()
+    )
+
+    conditions = ResourceRelatedField(
+        queryset=Condition.objects.all()
+    )
+
+    messages = ResourceRelatedField(
+        queryset=Message.objects.all()
     )
 
     class Meta:
+        resource_name = 'cases'
+        model = Action
+        fields = [
+            'id',
+            'name',
+            'description',
+            'group',
+            'action_function',
+            'output',
+            'conditions',
+            'messages'
+        ]
+
+
+
+class ParameterSerializer(ModelSerializer):
+    """Parameter Serializer"""
+
+    cases = ResourceRelatedField(
+        many=True,
+        queryset=Case.objects.all()
+    )
+
+    sources = ResourceRelatedField(
+        many=True,
+        queryset=Action.objects.all()
+    )
+
+    conditions = ResourceRelatedField(
+        many=True,
+        queryset=Condition.objects.all()
+    )
+
+    values = ResourceRelatedField(
+        many=True,
+        queryset=Value.objects.all()
+    )
+
+    workflows = ResourceRelatedField(
+        many=True,
+        queryset=Workflow.objects.all()
+    )
+
+    class Meta:
+        resource_name = 'parameters'
+        model = Parameter
+        fields = [
+            'id',
+            'name',
+            'view',
+            'cases',
+            'values',
+            'messages',
+            'sources',
+            'workflows',
+            'conditions'
+        ]
+
+
+class ValueSerializer(ModelSerializer):
+    """Value Serializer"""
+
+    value = JSONField(
+        required=False
+    )
+
+    state = CharField(
+        max_length=128
+    )
+
+    case = ResourceRelatedField(
+        queryset=Case.objects.all()
+    )
+
+    parameter = ResourceRelatedField(
+        queryset=Parameter.objects.all(),
+    )
+
+    class Meta():
+        resource_name = 'values'
+        model = Value
+        fields = [
+            'id',
+            'value',
+            'state',
+            'case',
+            'parameter'
+        ]
+
+
+class ConditionSerializer(ModelSerializer):
+    """Condition Serializer"""
+
+    parameter = ResourceRelatedField(
+        queryset=Parameter.objects.all()
+    )
+
+    action = ResourceRelatedField(
+        queryset=Action.objects.all()
+    )
+
+    workflow = ResourceRelatedField(
+        queryset=Workflow.objects.all()
+    )
+
+    class Meta:
+        resource_name = 'condition'
+        model = Condition
+        fields = [
+            'id',
+            'parameter',
+            'data',
+            'state',
+            'type',
+            'action',
+            'workflow'
+        ]
+
+
+class MessageSerializer(ModelSerializer):
+    """Message Serializer"""
+
+    class Meta:
         resource_name = 'messages'
-        model = models.Message
-        fields = (
+        model = Message
+        fields = [
             'id',
             'message_type',
             'timestamp',
+            'view',
+            'case',
             'origin',
             'response',
-            'case',
             'content',
-            'view',
-            'section',
-            'response_tokens',
-            'response_token_name'
-        )
+            'section'
+        ]
 
 
-class User(serializers.ModelSerializer):
+class UserSerializer(ModelSerializer):
+    """User Serializer"""
 
     class Meta:
         resource_name = 'users'
         model = User
-        fields = (
+        fields = [
             'id',
-            'username',
-        )
+            'username'
+        ]
 
 
-class Group(serializers.ModelSerializer):
+class GroupSerializer(ModelSerializer):
+    """Group Serializer"""
 
     class Meta:
         resource_name = 'groups'
         model = Group
-        fields = (
-            'name',
-        )
+        fields = [
+            'name'
+        ]
+
+
+#

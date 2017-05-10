@@ -19,7 +19,7 @@ export default JSONAPIAdapter.extend(DS.BuildURLMixin, {
 
     pathForType(type) {
         var inflector = new Ember.Inflector(Ember.Inflector.defaultRules);
-        return Ember.String.underscore(inflector.pluralize(type));
+        return Ember.String.underscore(type);
     },
 
     run(type, id, parameters) {

@@ -4,11 +4,11 @@ export default Ember.Controller.extend({
 
     actions: {
 
-        beginWorkflow: async function(net) {
+        beginWorkflow: async function(workflow) {
             let wfcase = this.get('store').createRecord('case');
-            wfcase.set("net", net)
+            wfcase.set("workflow", workflow)
             await wfcase.save();
-            this.transitionToRoute('case.inbox.index', wfcase)
+            this.transitionToRoute('cases.case.inbox', wfcase.id)
         }
 
     }

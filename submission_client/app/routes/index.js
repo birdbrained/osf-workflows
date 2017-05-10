@@ -5,7 +5,7 @@ import Ember from 'ember';
 export default Ember.Route.extend({
 
     model() {
-        return this.get('store').findRecord("net", "1a85108c-387d-47cd-8b47-ca831248bc4c");
+        return this.get('store').findRecord("workflow", "c4a2a604-aa56-444b-a450-ef17be5f7e38");
     },
 
     setupController: async function(controller, model) {
